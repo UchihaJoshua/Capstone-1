@@ -11,9 +11,9 @@
     @elseif (session('delete'))
         <x-flashMsg msg="{{ session('delete') }}" bg="bg-red-500" />
     @endif
-    <div class="card mb-4">
+    {{-- <div class="card mb-4"> --}}
         {{-- Import Excel Form --}}
-        <div class="mt-8">
+        {{-- <div class="mt-8">
             <h2 class="font-bold mb-4">Import Schedules using Excel</h2>
             <form action="{{ route('importUsersFromExcel') }}" method="post" enctype="multipart/form-data">
                 @csrf
@@ -27,10 +27,9 @@
             
             
                 <button type="submit" class="btn">Import</button>
-            </form>
-                        
-        </div>
-    </div>
+            </form>            
+        </div> --}}
+    {{-- </div> --}}
 
     {{-- Search and Filter Form --}}
     <form action="{{ route('user.show') }}" method="GET" class="flex space-x-4 mb-4">
@@ -70,6 +69,12 @@
     <form action="{{ route('instructors.deleteSelected') }}" method="POST" id="deleteSelectedForm">
         @csrf
         @method('DELETE')
+        
+        {{-- Bulk Delete Button --}}
+        <button type="submit" class="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 disabled:opacity-50" disabled id="deleteSelectedBtn">
+            Delete Selected
+        </button>
+
         {{-- User List Table --}}
         <table class="min-w-full bg-white border border-gray-300 rounded-md">
             <thead class="bg-gray-300">
@@ -113,10 +118,6 @@
             </tbody>
         </table>
     
-        {{-- Bulk Delete Button --}}
-        <button type="submit" class="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 disabled:opacity-50" disabled id="deleteSelectedBtn">
-            Delete Selected
-        </button>
     </form>
     
     

@@ -570,46 +570,47 @@ public function fetchScans(Request $request)
      $currentSettings = Setting::first();
      $schoolYear = $currentSettings->academic_year;
      $semester = $currentSettings->current_semester;
- 
+
      // Fetch all subjects excluding "vacant" and "pending" and filter by current sem and year
      $subjects = Subject::where('school_year', $schoolYear)
                          ->where('semester', $semester)
                          ->whereNotIn('name', ['Vacant', 'Pending'])
                          ->get();
- 
+
      $events = [];
- 
+
      foreach ($subjects as $subject) {
          // Fetch subject details
          $section = $subject->section;
- 
-         // Fetch linked instructors (select username from users)
+
+         // Fetch linked instructors
          $instructors = DB::table('user_subject')
                          ->join('users', 'user_subject.user_id', '=', 'users.id')
                          ->where('user_subject.subject_id', $subject->id)
-                         ->pluck('users.username'); // Assuming 'username' is the instructor's name
- 
-         // Convert the instructors into a string (comma-separated if multiple)
+                         ->pluck('users.username');
          $instructorNames = $instructors->isEmpty() ? 'No instructor' : implode(', ', $instructors->toArray());
- 
-         // Whether it's a makeup or a regular class, we handle both using the day of the week
-         $dayOfWeek = $this->convertDayToNumber($subject->day); // Convert day name to day number
-         $startTime = $subject->start_time;
-         $endTime = $subject->end_time;
- 
-         // Set color based on whether the class is a makeup class or regular class
-         $color = $subject->type === 'makeup' ? 'red' : 'blue';
- 
-         // Add the class as a recurring event based on the day of the week
-         $events[] = [
-             'title' => $subject->name . ($subject->type === 'makeup' ? ' (Makeup Class)' : '') . ' - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
-             'startTime' => Carbon::createFromFormat('H:i:s', $startTime)->format('H:i'),
-             'endTime' => Carbon::createFromFormat('H:i:s', $endTime)->format('H:i'),
-             'daysOfWeek' => [$dayOfWeek], // Use the correct day of the week for recurrence
-             'startRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 0, 4))->startOfYear()->format('Y-m-d'), // Start from beginning of school year
-             'endRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 5, 4))->endOfYear()->format('Y-m-d'), // End at the end of the school year
-             'color' => $color,
-         ];
+
+         // Handle "makeup" classes based on specific_date
+         if ($subject->type === 'makeup' && $subject->specific_date) {
+             $events[] = [
+                 'title' => $subject->name . ' (Makeup Class) - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
+                 'start' => Carbon::createFromFormat('Y-m-d H:i:s', $subject->specific_date . ' ' . $subject->start_time)->format('Y-m-d\TH:i'),
+                 'end' => Carbon::createFromFormat('Y-m-d H:i:s', $subject->specific_date . ' ' . $subject->end_time)->format('Y-m-d\TH:i'),
+                 'color' => 'red',
+             ];
+         } else {
+             // Handle regular classes
+             $dayOfWeek = $this->convertDayToNumber($subject->day);
+             $events[] = [
+                 'title' => $subject->name . ' - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
+                 'startTime' => Carbon::createFromFormat('H:i:s', $subject->start_time)->format('H:i'),
+                 'endTime' => Carbon::createFromFormat('H:i:s', $subject->end_time)->format('H:i'),
+                 'daysOfWeek' => [$dayOfWeek],
+                 'startRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 0, 4))->startOfYear()->format('Y-m-d'),
+                 'endRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 5, 4))->endOfYear()->format('Y-m-d'),
+                 'color' => 'blue',
+             ];
+         }
      }
 
         return view('users.userCalendar', compact('events', 'schoolYear'));

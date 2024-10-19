@@ -14,14 +14,15 @@
 <body class="bg-slate-100 text-slate-900">
     <header class="bg-slate-800 shadow-lg">
         <nav>
+
+            {{-- USER --}}
+            @auth('web')
+
             <a href="{{ route('dashboard') }}" class="nav-link">
                 <img src="{{ asset('storage/posts_images/1jeEWgOagO3eBPcjAJT4eDAgunLMKawi9kwGlYaN.png') }}"
                 alt="LockUp Logo"
                 class="h-1/auto w-1/2">
             </a>
-
-            {{-- USER --}}
-            @auth('web')
                 <div class="relative grid place-items-center" x-data="{ open: false }">
 
                     {{-- Dropdown menu button --}}
@@ -57,12 +58,19 @@
                 </div>
             @endauth
 
-            {{-- @guest
+            @guest
+
+            <a href="{{ route('posts.index') }}" class="nav-link">
+                <img src="{{ asset('storage/posts_images/1jeEWgOagO3eBPcjAJT4eDAgunLMKawi9kwGlYaN.png') }}"
+                alt="LockUp Logo"
+                class="h-1/auto w-1/2">
+            </a>
+
                 <div class="flex items-center gap-4">
                         <a href="{{ route('login') }}" class="nav-link">Login</a>
-                        <a href="{{ route('register') }}" class="nav-link">Register</a>
+                        {{-- <a href="{{ route('register') }}" class="nav-link">Register</a> --}}
                 </div>
-            @endguest --}}
+            @endguest
         </nav>
     </header>
 

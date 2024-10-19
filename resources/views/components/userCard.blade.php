@@ -9,9 +9,9 @@
         </div>
 
         {{-- User Image --}}
-        <div class="flex-shrink-0">
+        {{-- <div class="flex-shrink-0">
             <img src="{{ asset('storage/posts_images/user.jpg') }}" alt="{{ $instructor->username }}" class="w-16 h-16 object-cover rounded-full">
-        </div>
+        </div> --}}
     </div>
 
     {{-- Placeholder for extra elements used in user dashboard --}}

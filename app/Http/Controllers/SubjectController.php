@@ -11,7 +11,8 @@ use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-
+use App\Exports\SubjectsExport;
+use Illuminate\Support\Facades\Log;
 
 
 class SubjectController extends Controller
@@ -346,112 +347,195 @@ class SubjectController extends Controller
         return view('admin.admins.makeup_class_time', compact('subject', 'students', 'instructors', 'availableSlots'));
     }
 
-    // public function storeMakeupClass(Request $request, $id)
-    // {
-    //     // Validate the request
-    //     $request->validate([
-    //         'date' => 'required|date',
-    //         'start_time' => 'required',
-    //         'end_time' => 'required|after:start_time',
-    //     ]);
-    
-    //     // Find the existing subject by ID (this is used as a template for the new entry)
-    //     $existingSubject = Subject::findOrFail($id);
-    
-    //     // Convert the specific date to a Carbon instance to get the day of the week
-    //     $specificDate = Carbon::parse($request->date);
-    //     $specificDayOfWeek = $specificDate->format('l'); // Day of the week (e.g., "Monday", "Tuesday")
-    
-    //     // Create a new subject record for the makeup class with the updated day of the week
-    //     $newSubject = Subject::create([
-    //         'name' => $existingSubject->name,
-    //         'code' => $existingSubject->code,
-    //         'description' => $existingSubject->description,
-    //         'qr' => $existingSubject->qr,
-    //         'section' => $existingSubject->section,
-    //         'day' => $specificDayOfWeek, // Set this to the day of the week based on the specific_date
-    //         'image' => $existingSubject->image,
-    //         'type' => 'makeup', // Set this as a makeup class
-    //         'school_year' => $existingSubject->school_year,
-    //         'semester' => $existingSubject->semester,
-    //         'specific_date' => $request->date, // New specific date for the makeup class
-    //         'start_time' => $request->start_time,
-    //         'end_time' => $request->end_time,
-    //     ]);
-    
-    //     // Fetch the instructor(s) linked to the existing subject
-    //     $instructors = DB::table('user_subject')
-    //         ->where('subject_id', $existingSubject->id)
-    //         ->pluck('user_id');
-    
-    //     // Link the new makeup class to the same instructor(s)
-    //     foreach ($instructors as $userId) {
-    //         DB::table('user_subject')->insert([
-    //             'user_id' => $userId,
-    //             'subject_id' => $newSubject->id,
-    //             'created_at' => now(),
-    //             'updated_at' => now(),
-    //         ]);
-    //     }
-    
-    //     // Fetch the students linked to the existing subject
-    //     $students = DB::table('student_subject')
-    //         ->where('subject_id', $existingSubject->id)
-    //         ->pluck('student_id');
-    
-    //     // Link the new makeup class to the same student(s)
-    //     foreach ($students as $studentId) {
-    //         DB::table('student_subject')->insert([
-    //             'student_id' => $studentId,
-    //             'subject_id' => $newSubject->id,
-    //             'created_at' => now(),
-    //             'updated_at' => now(),
-    //         ]);
-    //     }
-    
-    //     // Redirect back with a success message
-    //     return redirect()->route('subjects.index')->with('success', 'New makeup class scheduled for ' . $specificDayOfWeek . ' and linked to instructor(s) and student(s) successfully.');
-    // }
-
     public function storeMakeupClass(Request $request, $id)
     {
         // Validate the request
         $request->validate([
-            'slot' => 'required|exists:subjects,id',
+            'date' => 'required|date',
+            'start_time' => 'required',
+            'end_time' => 'required|after:start_time',
         ]);
+   
+        // Convert the specific date to a Carbon instance
+        $specificDate = Carbon::parse($request->date);
     
-        // Fetch the selected slot (Pending/Vacant)
-        $selectedSlot = Subject::findOrFail($request->slot);
+        // Check if the specified date is in the past
+        if ($specificDate->isPast()) {
+            return redirect()->back()->with('error', 'The specified date cannot be in the past.');
+        }
     
         // Find the existing subject by ID (this is used as a template for the new entry)
         $existingSubject = Subject::findOrFail($id);
     
-        // Create a new subject record for the makeup class with the selected slot's schedule
+        // Get the day of the week from the specific date
+        $specificDayOfWeek = $specificDate->format('l');
+    
+        // Check for conflicts with any class (regular or makeup) on the same date and time
+        $conflictingSubjects = Subject::where('day', $specificDayOfWeek)
+        ->where(function ($query) use ($request) {
+            // Check for regular classes (no specific_date) and makeup classes (with specific_date)
+            $query->whereNull('specific_date') // Regular classes
+                  ->orWhere('specific_date', $request->date); // Makeup classes
+        })
+        ->where(function ($query) use ($request) {
+            $query->whereNull('type') // Regular classes
+                  ->orWhere('type', 'makeup'); // Makeup classes
+        })
+        ->where(function ($query) use ($request) {
+            // Improved overlap detection
+            $query->where(function ($q) use ($request) {
+                $q->where('start_time', '<', $request->end_time)
+                  ->where('end_time', '>', $request->start_time);
+            });
+        })
+        ->exists();
+    
+    if ($conflictingSubjects) {
+        return redirect()->back()->with('error', 'There is a conflict with an existing class (regular or makeup) on ' . $specificDayOfWeek . ' during the specified time.');
+    }
+    
+        // Create a new subject record for the makeup class with the updated day of the week
         $newSubject = Subject::create([
             'name' => $existingSubject->name,
             'code' => $existingSubject->code,
             'description' => $existingSubject->description,
             'qr' => $existingSubject->qr,
             'section' => $existingSubject->section,
-            'day' => $selectedSlot->day, // Use the day from the selected slot
+            'day' => $specificDayOfWeek,
             'image' => $existingSubject->image,
-            'type' => 'makeup', // Mark it as a makeup class
+            'type' => 'makeup',
             'school_year' => $existingSubject->school_year,
             'semester' => $existingSubject->semester,
-            'specific_date' => $selectedSlot->specific_date, // New specific date for the makeup class
-            'start_time' => $selectedSlot->start_time,
-            'end_time' => $selectedSlot->end_time,
+            'specific_date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
         ]);
     
-        // Sync users and students to the new makeup subject (from the original subject)
-        $newSubject->users()->sync($existingSubject->users->pluck('id')->toArray());
-        $newSubject->students()->sync($existingSubject->students->pluck('id')->toArray());
+        // Fetch the instructor(s) linked to the existing subject
+        $instructors = DB::table('user_subject')
+            ->where('subject_id', $existingSubject->id)
+            ->pluck('user_id');
     
-        return redirect()->route('subjects.index')->with('success', 'New makeup class scheduled successfully using the selected vacant/pending slot.');
+        // Link the new makeup class to the same instructor(s)
+        foreach ($instructors as $userId) {
+            DB::table('user_subject')->insert([
+                'user_id' => $userId,
+                'subject_id' => $newSubject->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    
+        // Fetch the students linked to the existing subject
+        $students = DB::table('student_subject')
+            ->where('subject_id', $existingSubject->id)
+            ->pluck('student_id');
+    
+        // Link the new makeup class to the same student(s)
+        foreach ($students as $studentId) {
+            DB::table('student_subject')->insert([
+                'student_id' => $studentId,
+                'subject_id' => $newSubject->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    
+        // Redirect back with a success message
+        return redirect()->route('subjects.index')->with('success', 'New makeup class scheduled for ' . $specificDayOfWeek . ' and linked to instructor(s) and student(s) successfully.');
     }
     
+    // public function storeMakeupClass(Request $request, $id)
+    // {
+    //     // Validate the request
+    //     $request->validate([
+    //         'slot' => 'required|exists:subjects,id',
+    //     ]);
+    
+    //     // Fetch the selected slot (Pending/Vacant)
+    //     $selectedSlot = Subject::findOrFail($request->slot);
+    
+    //     // Find the existing subject by ID (this is used as a template for the new entry)
+    //     $existingSubject = Subject::findOrFail($id);
+    
+    //     // Create a new subject record for the makeup class with the selected slot's schedule
+    //     $newSubject = Subject::create([
+    //         'name' => $existingSubject->name,
+    //         'code' => $existingSubject->code,
+    //         'description' => $existingSubject->description,
+    //         'qr' => $existingSubject->qr,
+    //         'section' => $existingSubject->section,
+    //         'day' => $selectedSlot->day, // Use the day from the selected slot
+    //         'image' => $existingSubject->image,
+    //         'type' => 'makeup', // Mark it as a makeup class
+    //         'school_year' => $existingSubject->school_year,
+    //         'semester' => $existingSubject->semester,
+    //         'specific_date' => $selectedSlot->specific_date, // New specific date for the makeup class
+    //         'start_time' => $selectedSlot->start_time,
+    //         'end_time' => $selectedSlot->end_time,
+    //     ]);
+    
+    //     // Sync users and students to the new makeup subject (from the original subject)
+    //     $newSubject->users()->sync($existingSubject->users->pluck('id')->toArray());
+    //     $newSubject->students()->sync($existingSubject->students->pluck('id')->toArray());
+    
+    //     return redirect()->route('subjects.index')->with('success', 'New makeup class scheduled successfully using the selected vacant/pending slot.');
+    // }
     
     
+    
+
+    // public function showCalendar()
+    // {
+    //     // Fetch the current semester and academic year from the settings
+    //     $currentSettings = Setting::first();
+    //     $schoolYear = $currentSettings->academic_year;
+    //     $semester = $currentSettings->current_semester;
+    
+    //     // Fetch all subjects excluding "vacant" and "pending" and filter by current sem and year
+    //     $subjects = Subject::where('school_year', $schoolYear)
+    //                         ->where('semester', $semester)
+    //                         ->whereNotIn('name', ['Vacant', 'Pending'])
+    //                         ->get();
+    
+    //     $events = [];
+    
+    //     foreach ($subjects as $subject) {
+    //         // Fetch subject details
+    //         $section = $subject->section;
+    
+    //         // Fetch linked instructors (select username from users)
+    //         $instructors = DB::table('user_subject')
+    //                         ->join('users', 'user_subject.user_id', '=', 'users.id')
+    //                         ->where('user_subject.subject_id', $subject->id)
+    //                         ->pluck('users.username'); // Assuming 'username' is the instructor's name
+    
+    //         // Convert the instructors into a string (comma-separated if multiple)
+    //         $instructorNames = $instructors->isEmpty() ? 'No instructor' : implode(', ', $instructors->toArray());
+    
+    //         // Whether it's a makeup or a regular class, we handle both using the day of the week
+    //         $dayOfWeek = $this->convertDayToNumber($subject->day); // Convert day name to day number
+    //         $startTime = $subject->start_time;
+    //         $endTime = $subject->end_time;
+    
+    //         // Set color based on whether the class is a makeup class or regular class
+    //         $color = $subject->type === 'makeup' ? 'red' : 'blue';
+    
+    //         // Add the class as a recurring event based on the day of the week
+    //         $events[] = [
+    //             'title' => $subject->name . ($subject->type === 'makeup' ? ' (Makeup Class)' : '') . ' - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
+    //             'startTime' => Carbon::createFromFormat('H:i:s', $startTime)->format('H:i'),
+    //             'endTime' => Carbon::createFromFormat('H:i:s', $endTime)->format('H:i'),
+    //             'daysOfWeek' => [$dayOfWeek], // Use the correct day of the week for recurrence
+    //             'startRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 0, 4))->startOfYear()->format('Y-m-d'), // Start from beginning of school year
+    //             'endRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 5, 4))->endOfYear()->format('Y-m-d'), // End at the end of the school year
+    //             'color' => $color,
+    //         ];
+    //     }
+    
+    //     // Pass the events and the start year to the calendar view
+    //     return view('admin.admins.calendar', compact('events', 'schoolYear'));
+    // }
 
     public function showCalendar()
     {
@@ -459,51 +543,53 @@ class SubjectController extends Controller
         $currentSettings = Setting::first();
         $schoolYear = $currentSettings->academic_year;
         $semester = $currentSettings->current_semester;
-    
+
         // Fetch all subjects excluding "vacant" and "pending" and filter by current sem and year
         $subjects = Subject::where('school_year', $schoolYear)
                             ->where('semester', $semester)
                             ->whereNotIn('name', ['Vacant', 'Pending'])
                             ->get();
-    
+
         $events = [];
-    
+
         foreach ($subjects as $subject) {
             // Fetch subject details
             $section = $subject->section;
-    
-            // Fetch linked instructors (select username from users)
+
+            // Fetch linked instructors
             $instructors = DB::table('user_subject')
                             ->join('users', 'user_subject.user_id', '=', 'users.id')
                             ->where('user_subject.subject_id', $subject->id)
-                            ->pluck('users.username'); // Assuming 'username' is the instructor's name
-    
-            // Convert the instructors into a string (comma-separated if multiple)
+                            ->pluck('users.username');
             $instructorNames = $instructors->isEmpty() ? 'No instructor' : implode(', ', $instructors->toArray());
-    
-            // Whether it's a makeup or a regular class, we handle both using the day of the week
-            $dayOfWeek = $this->convertDayToNumber($subject->day); // Convert day name to day number
-            $startTime = $subject->start_time;
-            $endTime = $subject->end_time;
-    
-            // Set color based on whether the class is a makeup class or regular class
-            $color = $subject->type === 'makeup' ? 'red' : 'blue';
-    
-            // Add the class as a recurring event based on the day of the week
-            $events[] = [
-                'title' => $subject->name . ($subject->type === 'makeup' ? ' (Makeup Class)' : '') . ' - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
-                'startTime' => Carbon::createFromFormat('H:i:s', $startTime)->format('H:i'),
-                'endTime' => Carbon::createFromFormat('H:i:s', $endTime)->format('H:i'),
-                'daysOfWeek' => [$dayOfWeek], // Use the correct day of the week for recurrence
-                'startRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 0, 4))->startOfYear()->format('Y-m-d'), // Start from beginning of school year
-                'endRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 5, 4))->endOfYear()->format('Y-m-d'), // End at the end of the school year
-                'color' => $color,
-            ];
+
+            // Handle "makeup" classes based on specific_date
+            if ($subject->type === 'makeup' && $subject->specific_date) {
+                $events[] = [
+                    'title' => $subject->name . ' (Makeup Class) - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
+                    'start' => Carbon::createFromFormat('Y-m-d H:i:s', $subject->specific_date . ' ' . $subject->start_time)->format('Y-m-d\TH:i'),
+                    'end' => Carbon::createFromFormat('Y-m-d H:i:s', $subject->specific_date . ' ' . $subject->end_time)->format('Y-m-d\TH:i'),
+                    'color' => 'red',
+                ];
+            } else {
+                // Handle regular classes
+                $dayOfWeek = $this->convertDayToNumber($subject->day);
+                $events[] = [
+                    'title' => $subject->name . ' - Section: ' . $section . ' - Instructor(s): ' . $instructorNames,
+                    'startTime' => Carbon::createFromFormat('H:i:s', $subject->start_time)->format('H:i'),
+                    'endTime' => Carbon::createFromFormat('H:i:s', $subject->end_time)->format('H:i'),
+                    'daysOfWeek' => [$dayOfWeek],
+                    'startRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 0, 4))->startOfYear()->format('Y-m-d'),
+                    'endRecur' => Carbon::createFromFormat('Y', substr($schoolYear, 5, 4))->endOfYear()->format('Y-m-d'),
+                    'color' => 'blue',
+                ];
+            }
         }
-    
-        // Pass the events and the start year to the calendar view
+
+        // Pass the events to the calendar view
         return view('admin.admins.calendar', compact('events', 'schoolYear'));
     }
+
     
     
     private function convertDayToNumber($day)
@@ -636,5 +722,10 @@ class SubjectController extends Controller
         return response()->json($subjects);
     }
     
+
+    public function exportSubjects()
+    {
+        return Excel::download(new SubjectsExport, 'CourseTemplate.xlsx');
+    }
     
 }

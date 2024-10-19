@@ -71,7 +71,7 @@ class UserController extends Controller
         ]);
 
         // Redirect with a success message
-        return redirect()->route('users.show')->with('success', 'User added successfully!');
+        return redirect()->route('user.show')->with('success', 'Instructor added successfully!');
     }
 
     /**
@@ -136,7 +136,7 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         User::destroy($id);
-        return redirect()->route('admin_dashboard');
+        return redirect()->route('user.show')->with('success', 'Instructor Deleted successfully');
     }
 
     /**

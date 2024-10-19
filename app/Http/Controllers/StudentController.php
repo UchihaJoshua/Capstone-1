@@ -11,6 +11,7 @@ use App\Imports\StudentImport;
 use App\Exports\DuplicatesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Student;
+use App\Exports\StudentsExport;
 use Illuminate\Support\Facades\Session;
 
 class StudentController extends Controller
@@ -408,7 +409,10 @@ class StudentController extends Controller
             return response()->json(['error' => 'Biometric data not found'], 404);
         }
 
-
+        public function exportStudents()
+        {
+            return Excel::download(new StudentsExport, 'StudentExcelTemplate.xlsx');
+        }
 
 
 }

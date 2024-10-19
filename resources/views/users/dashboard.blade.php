@@ -1,6 +1,6 @@
 <x-layout>
     {{-- Heading --}}
-    <h1 class="title">Welcome {{ auth()->user()->username }}, you have {{ $posts->total() }} subjects</h1>
+    <h1 class="title">Welcome {{ auth()->user()->username }}, you have {{ $posts->total() }} courses</h1>
 
     @php
     // Fetch current semester and academic year settings

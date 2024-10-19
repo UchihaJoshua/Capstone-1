@@ -22,7 +22,7 @@ class PostController extends Controller
     // public static function middleware(): array
     // {
     //     return [
-    //         new Middleware(['admin', 'auth', 'verified'], except: ['index', 'show']),
+    //         new Middleware(['admin'], except: ['index', 'show']),
     //     ];
     // }
     
@@ -84,7 +84,7 @@ class PostController extends Controller
         ]);
 
         //Redirect to dashboard
-        return redirect()->route('admin_dashboard')->with('success', 'You added a schedule.'); 
+        return redirect()->route('posts.index')->with('success', 'You added a manual.'); 
     }
 
     /**
@@ -142,7 +142,7 @@ class PostController extends Controller
         ]);
 
         //Redirect to dashboard
-        return redirect()->route('admin_dashboard')->with('success', 'Your schedule was updated.'); 
+        return redirect()->route('posts.index')->with('success', 'The manual was updated.'); 
     }
 
     /**

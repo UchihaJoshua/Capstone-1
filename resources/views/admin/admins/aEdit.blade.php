@@ -10,18 +10,18 @@
             @method('PUT')
 
             {{-- ID Field --}}
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <label for="id" class="block">ID</label>
                 <input type="text" id="id" name="id" value="{{ $instructor->id }}" class="input w-full @error('id') ring-red-500 @enderror" readonly>
                 @error('id')
                     <p class="error">{{ $message }}</p>
                 @enderror
-            </div>
+            </div> --}}
 
             {{-- Instructor Number Field --}}
             <div class="mb-4">
                 <label for="instructor_number" class="block">Instructor Number</label>
-                <input type="text" id="instructor_number" name="instructor_number" value="{{ $instructor->instructor_number }}" class="input w-full @error('instructor_number') ring-red-500 @enderror">
+                <input type="text" id="instructor_number" name="instructor_number" value="{{ $instructor->instructor_number }}" class="input w-full @error('instructor_number') ring-red-500 @enderror" readonly>
                 @error('instructor_number')
                     <p class="error">{{ $message }}</p>
                 @enderror
@@ -50,7 +50,7 @@
             <div class="mb-4 flex space-x-4">
                 <div class="flex-1">
                     <label for="pin" class="block">PIN</label>
-                    <input type="number" id="pin" name="pin" value="{{ $instructor->pin }}" class="input w-full @error('pin') ring-red-500 @enderror">
+                    <input type="text" id="pin" name="pin" value="{{ $instructor->pin }}" class="input w-full @error('pin') ring-red-500 @enderror">
                     @error('pin')
                         <p class="error">{{ $message }}</p>
                     @enderror
@@ -95,7 +95,7 @@
 
             {{-- Linked Subjects --}}
             <div class="mb-4">
-                <h2 class="font-bold mb-4">Linked Subjects</h2>
+                <h2 class="font-bold mb-4">Linked Courses</h2>
                 <ul class="list-disc pl-6 mb-8">
                     @foreach($linkedSubjects as $subject)
                         <li class="mb-2 text-lg">{{ $subject->name }} - <span class="text-gray-600">{{ $subject->code }}</span></li>

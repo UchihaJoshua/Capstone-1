@@ -62,7 +62,7 @@
             <x-postCard :post="$post">
                 <div class="flex items-center justify-end gap-4 mt-6">
                     {{-- Update post --}}
-                    <a href="{{ route('posts.edit', $post->id) }}"
+                    <a href="{{ route('editPost', $post->id) }}"
                         class="bg-green-500 text-white px-2 py-1 text-xs rounded-md">Update</a>
 
                     {{-- Delete post --}}

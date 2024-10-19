@@ -14,6 +14,9 @@ use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\PlotController;
+use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\YearController;
+use App\Http\Controllers\BlockController;
 use App\Exports\LogsExport;
 
 use App\Exports\ScansExport;
@@ -80,6 +83,16 @@ Route::middleware('auth')->group(function() {
 // Routes for admin Dashboard
 Route::middleware('admin')->prefix('admin')->group(function() 
 {
+    Route::get('export-subjects', [SubjectController::class, 'exportSubjects'])->name('exportSubjects');
+    Route::get('export-students', [StudentController::class, 'exportStudents'])->name('exportStudents');
+
+
+    Route::get('posts/{post}/edit', [PostController::class,'edit'])->name('editPost');
+
+    Route::resource('programs', ProgramController::class);
+    Route::resource('years', YearController::class);
+    Route::resource('blocks', BlockController::class);
+    
     Route::get('/export/logs', function () {
         return Excel::download(new LogsExport, 'logs.xlsx');
     })->name('export.logs');

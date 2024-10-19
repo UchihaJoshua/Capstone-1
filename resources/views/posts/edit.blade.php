@@ -1,4 +1,4 @@
-<x-layout>
+<x-adminlayout>
     <a href="{{ route('admin_dashboard') }}" class="block mb-2 text-xs text-blue-500">&larr; Go back to your dashboard</a>
 
     {{-- Update form card --}}
@@ -52,4 +52,4 @@
             <button class="btn">Update</button>
         </form>
     </div>
-</x-layout>
+</x-adminlayout>

@@ -2,6 +2,7 @@
     <div class="flex justify-between items-center mb-4">
         <a href="{{ route('admin_dashboard') }}" class="text-xs text-blue-500">&larr; Go back to your dashboard</a>
         <a href="{{ route('create') }}" class="bg-blue-500 text-white px-2 py-1 text-xs rounded-md">Manually Add Student</a>
+        <a href="{{ route('exportStudents') }}" class="bg-green-500 text-white px-2 py-1 text-xs rounded-md">Export Excel Template for Students</a>   
     </div>
             {{-- Session Messages --}}
             @if (session('success'))

@@ -30,7 +30,7 @@ class InstructorsImport implements ToCollection, WithHeadingRow
         foreach ($rows as $row) 
         {
             // Check if the email ends with "@my.cspc.edu.ph"
-            if (!str_ends_with($row['email'], '@my.cspc.edu.ph')) {
+            if (!str_ends_with($row['email'], '@cspc.edu.ph')) {
                 continue; // Skip the row if email is not valid
             }
 

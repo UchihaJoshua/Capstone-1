@@ -3,21 +3,19 @@
     <h1 class="title text-2xl mb-6">ADMIN DASHBOARD</h1>
 
     @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
+        <x-flashMsg msg="{{ session('success') }}" />
+    @endif
 
     @php
     // Fetch current semester and academic year settings
     $currentSettings = App\Models\Setting::first();
-@endphp
+    @endphp
 
-<!-- Display current settings as indicators -->
-<div>
-    <h3>Current Semester: {{ $currentSettings->current_semester }}</h3>
-    <h3>Current Academic Year: {{ $currentSettings->academic_year }}</h3>
-</div>
+    <!-- Display current settings as indicators -->
+    <div>
+        <h3>Current Semester: {{ $currentSettings->current_semester }}</h3>
+        <h3>Current Academic Year: {{ $currentSettings->academic_year }}</h3>
+    </div>
 
     <form method="POST" action="{{ route('setSemesterAndYear') }}">
         @csrf

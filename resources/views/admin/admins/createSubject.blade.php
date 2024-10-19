@@ -2,7 +2,7 @@
     {{-- Heading --}}
     <a href="{{ route('subjects.index') }}" class="block mb-2 text-xs text-blue-500">&larr; Go back</a>
     <div class="card mb-4">
-        <h2 class="font-bold mb-4">Add a new subject</h2>
+        <h2 class="font-bold mb-4">Add a new course</h2>
 
     {{-- Session Messages --}}
     @if (session('success'))
@@ -71,9 +71,9 @@
 
             {{-- Subject Name --}}
             <div class="mb-4">
-                <label for="name">Subject Name</label>
+                <label for="name">Course Name</label>
                 <input type="text" name="name" value="{{ old('name') }}"
-                    class="input @error('name') ring-red-500 @enderror" placeholder="Enter the subject name" required>
+                    class="input @error('name') ring-red-500 @enderror" placeholder="Enter the Course name" required>
 
                 @error('name')
                     <p class="error">{{ $message }}</p>
@@ -82,9 +82,9 @@
 
             {{-- Subject Code --}}
             <div class="mb-4">
-                <label for="code">Subject Code</label>
+                <label for="code">Course Code</label>
                 <input type="text" name="code" value="{{ old('code') }}"
-                    class="input @error('code') ring-red-500 @enderror" placeholder="Enter the subject code" required>
+                    class="input @error('code') ring-red-500 @enderror" placeholder="Enter the Course code" required>
 
                 @error('code')
                     <p class="error">{{ $message }}</p>
@@ -164,7 +164,7 @@
             </div>
 
             {{-- Submit Button --}}
-            <button class="btn">Add Subject</button>
+            <button class="btn">Add Course</button>
 
         </form>
     </div>
