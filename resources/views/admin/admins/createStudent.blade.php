@@ -49,7 +49,7 @@
             </div>
 
             {{-- Section --}}
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <label for="section">Section</label>
                 <input type="text" name="section" value="{{ old('section') }}"
                     class="input @error('section') ring-red-500 @enderror" placeholder="Enter the section" required>
@@ -57,7 +57,7 @@
                 @error('section')
                     <p class="error">{{ $message }}</p>
                 @enderror
-            </div>
+            </div> --}}
 
             {{-- Biometric Data --}}
             <div class="mb-4">

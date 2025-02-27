@@ -20,7 +20,7 @@
             <div class="mb-4">
                 <label for="student_number">Student Number</label>
                 <input type="text" name="student_number" value="{{ old('student_number', $student->student_number) }}"
-                    class="input @error('student_number') ring-red-500 @enderror" placeholder="Enter the student number" required>
+                    class="input @error('student_number') ring-red-500 @enderror" placeholder="Enter the student number" required readonly>
 
                 @error('student_number')
                     <p class="error">{{ $message }}</p>
@@ -50,7 +50,7 @@
             </div>
 
             {{-- Section --}}
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <label for="section">Section</label>
                 <input type="text" name="section" value="{{ old('section', $student->section) }}"
                     class="input @error('section') ring-red-500 @enderror" placeholder="Enter the section" required>
@@ -58,17 +58,17 @@
                 @error('section')
                     <p class="error">{{ $message }}</p>
                 @enderror
-            </div>
+            </div> --}}
 
             {{-- Biometric Data --}}
-            <div class="mb-4">
+            {{-- <div class="mb-4">
                 <label for="biometric_data">Biometric Data (optional)</label>
                 <input type="file" name="biometric_data" id="biometric_data" class="input @error('biometric_data') ring-red-500 @enderror">
 
                 @error('biometric_data')
                     <p class="error">{{ $message }}</p>
                 @enderror
-            </div>
+            </div> --}}
 
             {{-- Submit Button --}}
             <button class="btn">Update Student</button>

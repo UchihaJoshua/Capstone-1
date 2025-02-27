@@ -54,7 +54,7 @@ Route::middleware('auth')->group(function() {
     Route::get('/scans/export-pdf', [DashboardController::class, 'exportPdf'])->name('scans.export.pdf');
 
     //AJAX Route
-    Route::get('/scans/list', [DashboardController::class, 'fetchScans'])->name('scans.list');
+    Route::get('/attendance/fetch', [DashboardController::class, 'fetchScans'])->name('attendance.fetch');
 
     Route::get('edit-subjects', [UserController::class, 'showDashboard'])->name('user.dashboard');
     Route::post('link-subject', [UserController::class, 'linkSubject'])->name('user.linkSubject');

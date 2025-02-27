@@ -201,10 +201,9 @@ class DashboardController extends Controller
         } else {
             // Fetch the scans related to the filtered subjects where fingerprint_verified is true
             $scans = Scan::whereIn('subject_id', $linkedSubjects->pluck('id'))
-                ->where('fingerprint_verified', true)
-                ->with('subject')
-                ->orderBy('scanned_at', 'desc')
-                ->get();
+            ->with('subject')
+            ->orderBy('scanned_at', 'desc')
+            ->get();
     
             // Fetch all students enrolled in the linked subjects
             $students = DB::table('student_subject')
@@ -225,47 +224,82 @@ class DashboardController extends Controller
 
 
     public function saveAttendance(Request $request)
-    {
-        $now = Carbon::now('Asia/Manila');
-        $today = $now->format('Y-m-d'); // Current date
-    
-        // Fetch the current semester and academic year from the settings
-        $currentSettings = Setting::first();
-        $schoolYear = $currentSettings->academic_year;
-        $semester = $currentSettings->current_semester;
-    
-        // Store the subject_id for later use
-        $subjectId = $request->input('subject_id');
-    
-        // Process each student from the form data
-        foreach ($request->input('students', []) as $studentId => $studentData) {
-            // Check if the record already exists for the student, subject, and date
-            $existingRecord = StudentAttendance::where('student_id', $studentId)
-                ->where('subject_id', $subjectId)
-                ->where('date', $today)
-                ->first();
-    
-            // If no existing record is found, create a new attendance entry
-            if (!$existingRecord) {
-                StudentAttendance::create([
-                    'student_id' => $studentId,
-                    'subject_id' => $subjectId, 
-                    'status' => $studentData['status'],
-                    'time_in' => $studentData['time_in'],
-                    'time_out' => $studentData['time_out'],
-                    'date' => $today,
-                    'school_year' => $schoolYear,
-                    'semester' => $semester,
-                ]);
-            } 
-        }
-    
-        // After saving the attendance, delete the related scans for the subject
-        Scan::where('subject_id', $subjectId)->delete();
-    
-        // Redirect back with a success message
-        return redirect()->back()->with('success', 'Attendance saved successfully, and scans cleared.');
+{
+    dd($request);
+    $now = Carbon::now('Asia/Manila');
+    $today = $now->format('Y-m-d'); // Current date
+
+    // Fetch the current semester and academic year from the settings
+    $currentSettings = Setting::first();
+    $schoolYear = $currentSettings->academic_year;
+    $semester = $currentSettings->current_semester;
+
+    // Store the subject_id for later use
+    $subjectId = $request->input('subject_id');
+
+    // Process each student from the form data
+    foreach ($request->input('students', []) as $studentId => $studentData) {
+        // Check if the record already exists for the student, subject, and date
+        $existingRecord = StudentAttendance::where('student_id', $studentId)
+            ->where('subject_id', $subjectId)
+            ->where('date', $today)
+            ->first();
+
+        // If no existing record is found, create a new attendance entry
+        if (!$existingRecord) {
+            StudentAttendance::create([
+                'student_id' => $studentId,
+                'subject_id' => $subjectId, 
+                'status' => $studentData['status'],
+                'time_in' => $studentData['time_in'],
+                'time_out' => $studentData['time_out'],
+                'date' => $today,
+                'school_year' => $schoolYear,
+                'semester' => $semester,
+            ]);
+        } 
     }
+
+    // After saving the attendance, delete the related scans for the subject
+    Scan::where('subject_id', $subjectId)->delete();
+
+    // Prepare data for Excel export
+    $students = Student::whereHas('subjects', function ($query) use ($subjectId) {
+        $query->where('subject_id', $subjectId);
+    })->get();
+
+    $attendances = StudentAttendance::where('subject_id', $subjectId)
+        ->orderBy('date', 'asc')
+        ->get();
+
+    $data = $students->map(function ($student) use ($attendances) {
+        $row = ['name' => $student->name];
+
+        foreach ($attendances->where('student_id', $student->id) as $attendance) {
+            $row[$attendance->date] = $attendance->status;
+        }
+
+        return $row;
+    });
+
+    // Define headers for the Excel sheet
+    $headers = ['Name'];
+    $dates = StudentAttendance::where('subject_id', $subjectId)
+        ->select('date')
+        ->distinct()
+        ->orderBy('date', 'asc')
+        ->pluck('date')
+        ->toArray();
+
+    $headers = array_merge($headers, $dates);
+
+    // Export the data to Excel
+    $export = new \App\Exports\AttendanceExport($data, $headers);
+    Excel::store($export, 'attendance.xlsx', 'public');
+
+    // Redirect back with a success message and download the Excel file
+    return response()->download(storage_path('app/public/attendance.xlsx'))->deleteFileAfterSend(true);
+}
     
     
     public function exportAttendance($subjectId)
@@ -461,10 +495,9 @@ public function fetchScans(Request $request)
     } else {
         // Fetch the scans related to the filtered subjects
         $scans = Scan::whereIn('subject_id', $linkedSubjects->pluck('id'))
-            ->where('fingerprint_verified', true)
-            ->with('subject')
-            ->orderBy('scanned_at', 'desc')
-            ->get();
+        ->with('subject')
+        ->orderBy('scanned_at', 'desc')
+        ->get();
     }
 
     // Return the rendered view with both scans and students

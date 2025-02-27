@@ -1,6 +1,6 @@
 <x-layout>
     <div class="container mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h1 class="text-3xl font-bold mb-6">Your Subjects</h1>
+        <h1 class="text-3xl font-bold mb-6">Your Courses</h1>
         
         <ul class="list-disc pl-6 mb-8">
             @foreach($linkedSubjects as $subject)
@@ -23,11 +23,11 @@
         </ul>
 
         <div class="border-t pt-6">
-            <h2 class="text-2xl font-semibold mb-4">Link New Subject</h2>
+            <h2 class="text-2xl font-semibold mb-4">Link New Courses</h2>
             <form action="{{ route('user.linkSubject') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
-                    <label for="subject_id" class="block text-sm font-medium text-gray-700">Select Subject:</label>
+                    <label for="subject_id" class="block text-sm font-medium text-gray-700">Select Courses:</label>
                     <select name="subject_id" id="subject_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         @foreach($availableSubjects as $subject)
                             <option value="{{ $subject->id }}">
@@ -44,17 +44,17 @@
                     </select>
                 </div>
                 <button type="submit" class="bg-blue-500 text-white py-1 px-3 rounded-lg hover:bg-blue-600 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Link Subject
+                    Link Courses
                 </button>
             </form>
         </div>
 
         <div class="border-t pt-6 mt-6">
-            <h2 class="text-2xl font-semibold mb-4">Unlink Subject</h2>
+            <h2 class="text-2xl font-semibold mb-4">Unlink Courses</h2>
             <form action="{{ route('user.unlinkSubject') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
-                    <label for="subject_id" class="block text-sm font-medium text-gray-700">Select Subject:</label>
+                    <label for="subject_id" class="block text-sm font-medium text-gray-700">Select Courses:</label>
                     <select name="subject_id" id="subject_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-lg py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         @foreach($linkedSubjects as $subject)
                         <option value="{{ $subject->id }}" 
@@ -73,7 +73,7 @@
                     </select>
                 </div>
                 <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                    Unlink Subject
+                    Unlink Courses
                 </button>
             </form>
         </div>

@@ -45,7 +45,7 @@ class StudentImport implements ToCollection, WithHeadingRow
                     'student_number' => $row['student_number'],
                     'name' => $row['name'],
                     'email' => $row['email'],
-                    'section' => $row['section'],
+                    // 'section' => $row['section'],
                 ]);
             }
         }

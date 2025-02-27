@@ -41,13 +41,13 @@
                     </p>
                 </div>
             @empty
-                <p>No subjects are currently available.</p>
+                <p>No Courses are currently available.</p>
             @endforelse
         </div>
     </div>
 
     {{-- User Posts --}}
-    <h2 class="font-bold mb-4">Your Subjects</h2>
+    <h2 class="font-bold mb-4">Your Courses</h2>
 
     <div class="grid grid-cols-2 gap-6">
         @foreach ($posts as $post)

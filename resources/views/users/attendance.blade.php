@@ -86,7 +86,7 @@
             {{-- <button id="export-btn" class="mt-4 p-2 bg-blue-500 text-white rounded">Export PDF</button> --}}
 
                         {{-- New Export Button --}}
-                        @if($linkedSubjects->isNotEmpty())
+                        {{-- @if($linkedSubjects->isNotEmpty())
                         <button class="mt-4 p-2 bg-blue-500 text-white rounded"
                             onclick="window.location.href='{{ route('attendance.export.excel', ['subjectId' => $linkedSubjects->first()->id ?? '']) }}'">
                             Export Excel
@@ -95,7 +95,7 @@
                         <button class="mt-4 p-2 bg-gray-400 text-white rounded" disabled>
                             Export Excel
                         </button>
-                    @endif
+                    @endif --}}
         </div>
     </div>
 
@@ -109,4 +109,22 @@
             window.location.href = '{{ route('scans.export.excel') }}';
         }
     </script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+    // Reload the attendance table every 1 second using AJAX
+    setInterval(function() {
+        $.ajax({
+            url: '{{ route("attendance.fetch") }}', // Adjust this route to your route
+            type: 'GET',
+            success: function(data) {
+                $('#attendance-table').html(data);
+            },
+            error: function() {
+                console.log('Error loading attendance data.');
+            }
+        });
+    }, 1000); // 1000 milliseconds = 1 second
+</script>
 </x-layout>

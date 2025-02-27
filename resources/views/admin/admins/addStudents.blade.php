@@ -50,7 +50,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Number</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                            {{-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th> --}}
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fingerprint</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                         </tr>
@@ -61,7 +61,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $student->student_number }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->email }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->section }}</td>
+                            {{-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $student->section }}</td> --}}
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {{ $student->biometric_data ? 'text-green-500' : 'text-red-500' }}">
                                 {{ $student->biometric_data ? 'Recorded' : 'Not Recorded' }}
                             </td>

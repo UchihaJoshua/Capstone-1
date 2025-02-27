@@ -53,7 +53,7 @@ class StudentController extends Controller
         return response()->json([
             'id' => $user->id,
             'name' => $user->name,
-            'section' => $user->section,
+            // 'section' => $user->section,
         ]);
     }
 
@@ -114,9 +114,9 @@ class StudentController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getAllStudent()
+    public function getAllStudent() //  'section',
     {
-        $students = Student::all(['id', 'name', 'email', 'section', 'biometric_data']); // Specify fields to retrieve
+        $students = Student::all(['id', 'name', 'email', 'biometric_data']); // Specify fields to retrieve
 
         // Encode biometric data to Base64 if it exists
         $students->transform(function ($student) {
@@ -154,7 +154,7 @@ class StudentController extends Controller
                 'id' => $student->id,
                 'name' => $student->name,
                 'email' => $student->email,
-                'section' => $student->section,
+                // 'section' => $student->section,
             ], Response::HTTP_OK);
         }
 
@@ -169,14 +169,14 @@ class StudentController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function storeStudent(Request $request)
+    public function storeStudent(Request $request) // di ata to gamit
     {
         dd($request);
         // Validation rules
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:students',
-            'section' => 'required|string|max:255',
+            // 'section' => 'required|string|max:255',
             'password' => 'required|string|min:8',
             'biometric_data' => 'nullable|string', // Use string for binary data
         ]);
@@ -196,7 +196,7 @@ class StudentController extends Controller
         $student = Student::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
-            'section' => $request->input('section'),
+            // 'section' => $request->input('section'),
             'password' => Hash::make($request->input('password')),
             'biometric_data' => $biometricData, // Save binary data
         ]);
@@ -219,7 +219,7 @@ class StudentController extends Controller
             'student_number' => 'required|unique:students,student_number',
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:students,email',
-            'section' => 'required|string|max:255',
+            // 'section' => 'required|string|max:255',
             'biometric_data' => 'nullable|file',
         ]);
 
@@ -234,7 +234,7 @@ class StudentController extends Controller
         $student->student_number = $request->student_number;
         $student->name = $request->name;
         $student->email = $request->email;
-        $student->section = $request->section;
+        // $student->section = $request->section;
         $student->biometric_data = $biometricData;
         $student->save();
 
@@ -257,7 +257,7 @@ class StudentController extends Controller
                 'student_number' => 'required|unique:students,student_number,' . $id,
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:students,email,' . $id,
-                'section' => 'required|string|max:255',
+                // 'section' => 'required|string|max:255',
                 'biometric_data' => 'nullable|file',
             ]);
     
@@ -273,7 +273,7 @@ class StudentController extends Controller
             $student->student_number = $request->student_number;
             $student->name = $request->name;
             $student->email = $request->email;
-            $student->section = $request->section;
+            // $student->section = $request->section;
             $student->save();
     
             // Redirect back with a success message
